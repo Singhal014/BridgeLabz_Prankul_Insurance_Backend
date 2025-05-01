@@ -1,0 +1,22 @@
+# Build outputs
+bin/
+obj/
+
+# Visual Studio settings
+.vs/
+*.user
+*.suo
+
+# Logs
+*.log
+logs/
+
+# Entity Framework Migrations (optional)
+Migrations/
+
+# Test results
+TestResults/
+
+# Coverage reports
+coverage/
+
