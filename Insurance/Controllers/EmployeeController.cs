@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Insurance.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeBL _employeeBL;
@@ -20,7 +20,7 @@ namespace Insurance.Controllers
             _logger = logger;
         }
 
-        [HttpPost("register")]
+        [HttpPost]
         public async Task<IActionResult> Register([FromBody] AdminModel model)
         {
             try

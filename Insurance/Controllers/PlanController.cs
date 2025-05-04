@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Insurance.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class PlanController : ControllerBase
     {
         private readonly IPlanBL _planBL;
@@ -16,14 +16,14 @@ namespace Insurance.Controllers
             _planBL = planBL;
         }
 
-        [HttpPost("create")]
+        [HttpPost]
         public async Task<IActionResult> CreatePlan([FromBody] PlanModel model)
         {
             var result = await _planBL.CreatePlanAsync(model);
             return Ok(new { Success = true, Message = "Plan created", Data = result });
         }
 
-        [HttpGet("all")]
+        [HttpGet]
         public async Task<IActionResult> GetPlans()
         {
             var result = await _planBL.GetAllPlansAsync();

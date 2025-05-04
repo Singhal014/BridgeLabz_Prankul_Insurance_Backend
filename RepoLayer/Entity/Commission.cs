@@ -9,13 +9,13 @@ namespace RepoLayer.Entity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long CommissionId { get; set; }
+        public int CommissionId { get; set; }
 
         [Required]
-        public long AgentId { get; set; }
+        public int AgentId { get; set; }
 
         [Required]
-        public long PolicyId { get; set; }
+        public int PolicyId { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(10,2)")]

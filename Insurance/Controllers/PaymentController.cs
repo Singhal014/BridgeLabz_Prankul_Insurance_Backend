@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Insurance.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [Authorize(Roles = "Employee,Agent")]
     public class PaymentController : ControllerBase
     {
@@ -23,7 +23,7 @@ namespace Insurance.Controllers
             _logger = logger;
         }
 
-        [HttpPost("process")]
+        [HttpPost]
         public async Task<IActionResult> ProcessPayment([FromBody] PaymentModel model)
         {
             try
@@ -48,7 +48,7 @@ namespace Insurance.Controllers
             }
         }
 
-        [HttpGet("history/{customerId}")]
+        [HttpGet]
         [Authorize(Roles = "Admin,Employee,Agent,Customer")]
         public async Task<IActionResult> GetPaymentHistory(int customerId)
         {

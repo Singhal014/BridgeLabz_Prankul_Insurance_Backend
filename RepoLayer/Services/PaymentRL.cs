@@ -5,7 +5,9 @@ using RepoLayer.Context;
 using RepoLayer.Entity;
 using RepoLayer.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RepoLayer.Services
@@ -21,26 +23,43 @@ namespace RepoLayer.Services
 
         public async Task<Payment> ProcessPaymentAsync(Payment payment)
         {
-            var paymentIdParam = new SqlParameter("@PaymentId", SqlDbType.Int) { Direction = ParameterDirection.Output };
-
-            var parameters = new[]
+            try
             {
-    new SqlParameter("@CustomerId", SqlDbType.Int) { Value = payment.CustomerId },
-    new SqlParameter("@PolicyId", SqlDbType.Int) { Value = payment.PolicyId },
-    new SqlParameter("@Amount", SqlDbType.Decimal) { Value = payment.Amount },
-    new SqlParameter("@PaymentDate", SqlDbType.DateTime) { Value = payment.PaymentDate },
-    new SqlParameter("@CreatedAt", SqlDbType.DateTime) { Value = payment.CreatedAt },
-    paymentIdParam
-};
+                bool alreadyPaid = await _context.Payments
+                    .AnyAsync(p => p.CustomerId == payment.CustomerId && p.PolicyId == payment.PolicyId);
 
-            await _context.Database.ExecuteSqlRawAsync(
-                "EXEC dbo.sp_ProcessPayment @CustomerId, @PolicyId, @Amount, @PaymentDate, @CreatedAt, @PaymentId OUTPUT",
-                parameters);
+                if (alreadyPaid)
+                {
+                    throw new Exception("No payment dues. Payment already made for this policy.");
+                }
 
-            var paymentId = Convert.ToInt32(paymentIdParam.Value);
-            var createdPayment = await _context.Payments.FindAsync(paymentId);
-            return createdPayment ?? throw new Exception("Failed to retrieve newly created payment.");
+                var paymentIdParam = new SqlParameter("@PaymentId", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+                var parameters = new[]
+                {
+                    new SqlParameter("@CustomerId", SqlDbType.Int) { Value = payment.CustomerId },
+                    new SqlParameter("@PolicyId", SqlDbType.Int) { Value = payment.PolicyId },
+                    new SqlParameter("@Amount", SqlDbType.Decimal) { Value = payment.Amount },
+                    new SqlParameter("@PaymentDate", SqlDbType.DateTime) { Value = payment.PaymentDate },
+                    new SqlParameter("@CreatedAt", SqlDbType.DateTime) { Value = payment.CreatedAt },
+                    paymentIdParam
+                };
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    "EXEC dbo.sp_ProcessPayment @CustomerId, @PolicyId, @Amount, @PaymentDate, @CreatedAt, @PaymentId OUTPUT",
+                    parameters);
+
+                var paymentId = Convert.ToInt32(paymentIdParam.Value);
+                var createdPayment = await _context.Payments.FindAsync(paymentId);
+
+                return createdPayment ?? throw new Exception("Failed to retrieve newly created payment.");
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
+
         public async Task<List<PaymentViewModel>> GetCustomerPaymentHistoryAsync(long customerId)
         {
             return await (from payment in _context.Payments
@@ -56,6 +75,5 @@ namespace RepoLayer.Services
                               PolicyStatus = policy.Status
                           }).ToListAsync();
         }
-
     }
 }

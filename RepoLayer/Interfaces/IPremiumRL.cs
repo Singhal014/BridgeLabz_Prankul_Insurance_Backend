@@ -1,11 +1,11 @@
-﻿using ModelLayer.Models;
-using System.Threading.Tasks;
+﻿//using ModelLayer.Models;
+//using System.Threading.Tasks;
 
-namespace RepoLayer.Interfaces
-{
-    public interface IPremiumRL
-    {
+//namespace RepoLayer.Interfaces
+//{
+//    public interface IPremiumRL
+//    {
         
-        Task<decimal> CalculatePremiumAsync(PremiumModel model);
-    }
-}
+//        Task<decimal> CalculatePremiumAsync(PremiumModel model);
+//    }
+//}

@@ -10,5 +10,9 @@ namespace RepoLayer.Interfaces
         Task<List<Policy>> GetAllPoliciesAsync();
         Task<List<Policy>> GetPoliciesByCustomerIdAsync(int customerId); 
         Task<List<Policy>> GetPoliciesByStatusAsync(string status);
+        Task<Policy> GetPolicyByCustomerPlanSchemeAsync(int customerId, int planId, int schemeId);
+        Task<Policy> CancelPolicyAsync(int policyId);
+
+
     }
 }

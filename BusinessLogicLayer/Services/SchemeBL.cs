@@ -21,14 +21,9 @@ namespace BusinessLogicLayer.Services
             return _schemeRL.CreateSchemeAsync(model);
         }
 
-        public Task<List<Scheme>> GetSchemesByPlanIdAsync(int planId)
+        public Task<List<Scheme>> GetAllSchemesAsync()
         {
-            return _schemeRL.GetSchemesByPlanIdAsync(planId);
+            return _schemeRL.GetAllSchemesAsync();
         }
-        public Task<Scheme> GetSchemeByIdAsync(int schemeId)
-        {
-            return _schemeRL.GetSchemeByIdAsync(schemeId);
-        }
-
     }
 }

@@ -5,6 +5,7 @@ using RepoLayer.Context;
 using RepoLayer.Entity;
 using RepoLayer.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BusinessLogicLayer.Services
@@ -24,28 +25,46 @@ namespace BusinessLogicLayer.Services
 
         public async Task<Payment> ProcessPaymentAsync(PaymentModel model)
         {
-            var policy = await _context.Policies.FindAsync(model.PolicyId);
-            if (policy == null || policy.CustomerId != model.CustomerId)
+            try
             {
-                _logger.LogWarning("Invalid policy ({PolicyId}) or customer mismatch ({CustomerId})", model.PolicyId, model.CustomerId);
-                throw new Exception("Invalid policy or customer mismatch.");
+                var policy = await _context.Policies.FindAsync(model.PolicyId);
+                if (policy == null || policy.CustomerId != model.CustomerId)
+                {
+                    _logger.LogWarning("Invalid policy ({PolicyId}) or customer mismatch ({CustomerId})", model.PolicyId, model.CustomerId);
+                    throw new Exception("Invalid policy or customer mismatch.");
+                }
+
+                var payment = new Payment
+                {
+                    CustomerId = model.CustomerId,
+                    PolicyId = model.PolicyId,
+                    Amount = policy.PremiumAmount,
+                    PaymentDate = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                var result = await _paymentRL.ProcessPaymentAsync(payment);
+                _logger.LogInformation("Payment processed for PaymentId: {PaymentId}", result.PaymentId);
+                return result;
             }
-
-            var payment = new Payment
+            catch (Exception ex)
             {
-                CustomerId = model.CustomerId,
-                PolicyId = model.PolicyId,
-                Amount = policy.PremiumAmount,
-                PaymentDate = DateTime.UtcNow,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            return await _paymentRL.ProcessPaymentAsync(payment);
+                _logger.LogError(ex, "Error processing payment for CustomerId: {CustomerId}, PolicyId: {PolicyId}", model.CustomerId, model.PolicyId);
+                throw;
+            }
         }
+
         public async Task<List<PaymentViewModel>> GetCustomerPaymentHistoryAsync(int customerId)
         {
-            return await _paymentRL.GetCustomerPaymentHistoryAsync(customerId);
+            try
+            {
+                return await _paymentRL.GetCustomerPaymentHistoryAsync(customerId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving payment history for CustomerId: {CustomerId}", customerId);
+                throw;
+            }
         }
-
     }
 }

@@ -20,10 +20,19 @@ namespace BusinessLogicLayer.Services
             _logger = logger;
         }
 
-        public async Task<Policy> CreatePolicyAsync(PolicyModel model, int userId) 
+        public async Task<Policy> CreatePolicyAsync(PolicyModel model, int userId)
         {
             try
             {
+                var existingPolicy = await _policyRL.GetPolicyByCustomerPlanSchemeAsync(model.CustomerId, model.PlanId, model.SchemeId);
+
+                if (existingPolicy != null && existingPolicy.Status == "Active")
+                {
+                    _logger.LogWarning("Policy already exists and is active for CustomerId {CustomerId}, PlanId {PlanId}, SchemeId {SchemeId}",
+                        model.CustomerId, model.PlanId, model.SchemeId);
+                    throw new Exception("Policy already exists and is active.");
+                }
+
                 decimal premium = CalculatePremium(model.MaturityPeriod);
 
                 var policyEntity = new Policy
@@ -56,7 +65,7 @@ namespace BusinessLogicLayer.Services
             return await _policyRL.GetAllPoliciesAsync();
         }
 
-        public async Task<List<Policy>> GetPoliciesByCustomerIdAsync(int customerId) // Changed from long to int
+        public async Task<List<Policy>> GetPoliciesByCustomerIdAsync(int customerId)
         {
             return await _policyRL.GetPoliciesByCustomerIdAsync(customerId);
         }
@@ -72,5 +81,20 @@ namespace BusinessLogicLayer.Services
             decimal additionalFactor = staticBaseRate * 0.10m;
             return (staticBaseRate * maturityPeriod) + additionalFactor;
         }
+        public async Task<Policy> CancelPolicyAsync(int policyId, int userId)
+        {
+            try
+            {
+                var cancelledPolicy = await _policyRL.CancelPolicyAsync(policyId);
+                _logger.LogInformation("User {UserId} cancelled policy with ID {PolicyId}.", userId, policyId);
+                return cancelledPolicy;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "User {UserId} failed to cancel policy with ID {PolicyId}.", userId, policyId);
+                throw;
+            }
+        }
+
     }
 }

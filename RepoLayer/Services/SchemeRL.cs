@@ -4,7 +4,6 @@ using RepoLayer.Entity;
 using RepoLayer.Interfaces;
 using ModelLayer.Models;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace RepoLayer.Services
@@ -30,25 +29,12 @@ namespace RepoLayer.Services
             _context.Schemes.Add(scheme);
             await _context.SaveChangesAsync();
 
-            return await _context.Schemes
-                .Include(s => s.Plan)
-                .FirstOrDefaultAsync(s => s.SchemeId == scheme.SchemeId);
+            return scheme; 
         }
 
-
-        public async Task<List<Scheme>> GetSchemesByPlanIdAsync(int planId)
+        public async Task<List<Scheme>> GetAllSchemesAsync()
         {
-            return await _context.Schemes
-                .Include(s => s.Plan)                 
-                .Where(s => s.PlanId == planId)
-                .ToListAsync();
+            return await _context.Schemes.ToListAsync(); 
         }
-        public async Task<Scheme> GetSchemeByIdAsync(int schemeId)
-        {
-            return await _context.Schemes
-                .Include(s => s.Plan)
-                .FirstOrDefaultAsync(s => s.SchemeId == schemeId);
-        }
-
     }
 }

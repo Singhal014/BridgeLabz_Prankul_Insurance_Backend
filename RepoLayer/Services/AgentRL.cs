@@ -2,6 +2,7 @@
 using RepoLayer.Context;
 using RepoLayer.Entity;
 using RepoLayer.Interfaces;
+using System;
 using System.Threading.Tasks;
 
 namespace RepoLayer.Services
@@ -17,25 +18,53 @@ namespace RepoLayer.Services
 
         public async Task<Agent> RegisterAgentAsync(Agent agentEntity)
         {
-            await _context.Agents.AddAsync(agentEntity);
-            await _context.SaveChangesAsync();
-            return agentEntity;
+            try
+            {
+                await _context.Agents.AddAsync(agentEntity);
+                await _context.SaveChangesAsync();
+                return agentEntity;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while registering the agent.", ex);
+            }
         }
 
         public async Task<Agent> GetAgentByEmailAsync(string email)
         {
-            return await _context.Agents.FirstOrDefaultAsync(a => a.Email == email);
+            try
+            {
+                return await _context.Agents.FirstOrDefaultAsync(a => a.Email == email);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occurred while retrieving agent by email: {email}", ex);
+            }
         }
 
-        public async Task<Agent> GetAgentByIdAsync(int agentId)  
+        public async Task<Agent> GetAgentByIdAsync(int agentId)
         {
-            return await _context.Agents.FirstOrDefaultAsync(a => a.AgentID == agentId);
+            try
+            {
+                return await _context.Agents.FirstOrDefaultAsync(a => a.AgentID == agentId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occurred while retrieving agent by ID: {agentId}", ex);
+            }
         }
 
         public async Task<bool> UpdateAgentAsync(Agent agentEntity)
         {
-            _context.Agents.Update(agentEntity);
-            return await _context.SaveChangesAsync() > 0;
+            try
+            {
+                _context.Agents.Update(agentEntity);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while updating the agent.", ex);
+            }
         }
     }
 }

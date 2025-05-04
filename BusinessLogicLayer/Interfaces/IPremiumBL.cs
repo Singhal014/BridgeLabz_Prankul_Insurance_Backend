@@ -1,11 +1,11 @@
-﻿using ModelLayer.Models;
-using System.Threading.Tasks;
+﻿//using ModelLayer.Models;
+//using System.Threading.Tasks;
 
-namespace BusinessLogicLayer.Interfaces
-{
-    public interface IPremiumBL
-    {
+//namespace BusinessLogicLayer.Interfaces
+//{
+//    public interface IPremiumBL
+//    {
         
-        Task<decimal> CalculatePremiumAsync(PremiumModel model);
-    }
-}
+//        Task<decimal> CalculatePremiumAsync(PremiumModel model);
+//    }
+//}

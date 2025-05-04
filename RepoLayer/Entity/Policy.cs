@@ -34,7 +34,6 @@ namespace RepoLayer.Entity
 
         public DateTime CreatedAt { get; set; }
 
-        // Foreign key relationships (optional)
         [ForeignKey("CustomerId")]
         public Customer Customer { get; set; }
 

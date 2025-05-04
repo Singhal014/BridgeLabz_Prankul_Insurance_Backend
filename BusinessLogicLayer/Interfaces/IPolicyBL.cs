@@ -11,5 +11,7 @@ namespace BusinessLogicLayer.Interfaces
         Task<List<Policy>> GetAllPoliciesAsync();
         Task<List<Policy>> GetPoliciesByCustomerIdAsync(int customerId);
         Task<List<Policy>> GetPoliciesByStatusAsync(string status);
+        Task<Policy> CancelPolicyAsync(int policyId, int userId);
+
     }
 }

@@ -7,5 +7,6 @@ namespace BusinessLogicLayer.Interfaces
     public interface ICommissionBL
     {
         Task<Commission> CalculateCommissionAsync(CommissionModel model);
+        Task<(List<Commission> Commissions, decimal TotalCommission)> GetAllCommissionsByAgentIdAsync(int agentId);
     }
 }

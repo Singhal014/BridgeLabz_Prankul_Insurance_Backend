@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Insurance.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [Authorize(Roles = "Employee,Agent")]
     public class PolicyController : ControllerBase
     {
@@ -24,7 +24,7 @@ namespace Insurance.Controllers
             _logger = logger;
         }
 
-        [HttpPost("create")]
+        [HttpPost]
         public async Task<IActionResult> CreatePolicy([FromBody] PolicyModel model)
         {
             try
@@ -66,7 +66,7 @@ namespace Insurance.Controllers
             }
         }
 
-        [HttpGet("all")]
+        [HttpGet]
         [Authorize(Roles = "Admin,Employee,Agent")]
         public async Task<IActionResult> GetAllPolicies()
         {
@@ -79,9 +79,9 @@ namespace Insurance.Controllers
             });
         }
 
-        [HttpGet("by-customer/{customerId}")]
+        [HttpGet("by-customer")]
         [Authorize(Roles = "Admin,Employee,Agent,Customer")]
-        public async Task<IActionResult> GetByCustomerId(int customerId) // Changed from long to int
+        public async Task<IActionResult> GetByCustomerId(int customerId) 
         {
             var policies = await _policyBL.GetPoliciesByCustomerIdAsync(customerId);
             return Ok(new ResponseModel<List<Policy>>
@@ -92,7 +92,7 @@ namespace Insurance.Controllers
             });
         }
 
-        [HttpGet("by-status/{status}")]
+        [HttpGet("by-status")]
         [Authorize(Roles = "Admin,Employee,Agent")]
         public async Task<IActionResult> GetByStatus(string status)
         {
@@ -104,5 +104,45 @@ namespace Insurance.Controllers
                 Data = policies
             });
         }
+        [HttpPut("cancel")]
+        public async Task<IActionResult> CancelPolicy(int policyId)
+        {
+            try
+            {
+                int userId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+                var result = await _policyBL.CancelPolicyAsync(policyId, userId);
+
+                var response = new ResponseModel<Policy>
+                {
+                    Success = true,
+                    Message = "Policy cancelled successfully",
+                    Data = result
+                };
+
+                _logger.LogInformation("Policy with ID {PolicyId} cancelled by user {UserId}", policyId, userId);
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning("Unauthorized cancel attempt for policy {PolicyId}: {Message}", policyId, ex.Message);
+                return Unauthorized(new ResponseModel<string>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cancelling policy with ID {PolicyId}", policyId);
+                return StatusCode(500, new ResponseModel<string>
+                {
+                    Success = false,
+                    Message = "Failed to cancel policy",
+                    Data = ex.Message
+                });
+            }
+        }
+
     }
 }
