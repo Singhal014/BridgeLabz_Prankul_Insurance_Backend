@@ -66,5 +66,18 @@ namespace RepoLayer.Services
                 throw new Exception("An error occurred while updating the agent.", ex);
             }
         }
+        public async Task<List<Agent>> GetAllAgentsAsync()
+        {
+            try
+            {
+                return await _context.Agents.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while retrieving all agents.", ex);
+            }
+        }
+
+
     }
 }

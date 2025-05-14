@@ -33,6 +33,7 @@ namespace BusinessLogicLayer.Services
             _otpService = otpService;
         }
 
+
         public async Task<Customer> RegisterCustomerAsync(CustomerRegistration model)
         {
             try
@@ -44,14 +45,28 @@ namespace BusinessLogicLayer.Services
                     throw new InvalidOperationException("This email is already registered.");
                 }
 
-                if (model.AgentID.HasValue)
+                Agent agent = null;
+
+                if (!string.IsNullOrWhiteSpace(model.AgentEmail))
                 {
-                    var agentExists = await _agentRL.GetAgentByIdAsync(model.AgentID.Value);
-                    if (agentExists == null)
+                    agent = await _agentRL.GetAgentByEmailAsync(model.AgentEmail);
+                    if (agent == null)
                     {
-                        _logger.LogWarning("Invalid AgentID provided during customer registration: {AgentID}", model.AgentID.Value);
-                        throw new ArgumentException("Invalid AgentID provided.");
+                        _logger.LogWarning("Agent not found for email: {AgentEmail}", model.AgentEmail);
+                        throw new ArgumentException("No agent found with the provided email.");
                     }
+                }
+                else
+                {
+                    var allAgents = await _agentRL.GetAllAgentsAsync();
+                    if (allAgents == null || !allAgents.Any())
+                    {
+                        _logger.LogWarning("No agents available for auto-assignment.");
+                        throw new InvalidOperationException("No agents available for assignment.");
+                    }
+
+                    var random = new Random();
+                    agent = allAgents[random.Next(allAgents.Count)];
                 }
 
                 var hashed = PasswordHelper.PasswordHash(model.Password);
@@ -63,7 +78,7 @@ namespace BusinessLogicLayer.Services
                     Password = hashed,
                     Phone = model.Phone,
                     DateOfBirth = model.DateOfBirth,
-                    AgentID = model.AgentID,
+                    AgentID = agent.AgentID,
                     Role = "Customer",
                     CreatedAt = DateTime.UtcNow
                 };
@@ -84,16 +99,17 @@ namespace BusinessLogicLayer.Services
                     _logger.LogError(ex, "RabbitMQ enqueue failed for customer: {Email}", model.Email);
                 }
 
-                _logger.LogInformation("Customer registered & queued for email: {Email}", model.Email);
+                _logger.LogInformation("Customer registered successfully with email: {Email}", model.Email);
 
                 return result;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred during customer registration for email: {Email}", model.Email);
-                throw;  
+                throw;
             }
         }
+
 
         public async Task<string> LoginCustomerAsync(LoginModel model)
         {

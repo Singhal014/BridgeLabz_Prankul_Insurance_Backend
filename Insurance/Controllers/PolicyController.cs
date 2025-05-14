@@ -6,13 +6,14 @@ using ModelLayer.Models;
 using RepoLayer.Entity;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Insurance.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = "Employee,Agent")]
+    [Authorize]
     public class PolicyController : ControllerBase
     {
         private readonly IPolicyBL _policyBL;
@@ -65,6 +66,82 @@ namespace Insurance.Controllers
                 return StatusCode(500, errorResponse);
             }
         }
+
+
+        [Authorize(Roles = "Customer")]
+        [HttpPost("create-policy/customer")]
+        public async Task<IActionResult> CreatePolicyForCustomer([FromBody] CustomerPolicyModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var idClaim = User.FindFirst("Id");
+                if (idClaim == null || !int.TryParse(idClaim.Value, out int customerId))
+                {
+                    _logger.LogError("Customer Id not found in JWT token.");
+                    return Unauthorized(new ResponseModel<string>
+                    {
+                        Success = false,
+                        Message = "Invalid token - customer identification missing",
+                        Data = null
+                    });
+                }
+
+                var policyModel = new PolicyModel
+                {
+                    CustomerId = customerId,  
+                    PlanId = model.PlanId,
+                    SchemeId = model.SchemeId,
+                    MaturityPeriod = model.MaturityPeriod
+                };
+
+                var result = await _policyBL.CreatePolicyAsync(policyModel, customerId);
+
+                if (result != null)
+                {
+                    _logger.LogInformation("Policy created successfully for CustomerId: {CustomerId}", customerId);
+                    return Ok(new ResponseModel<Policy>
+                    {
+                        Success = true,
+                        Message = "Policy created successfully",
+                        Data = result
+                    });
+                }
+
+                return BadRequest(new ResponseModel<string>
+                {
+                    Success = false,
+                    Message = "Policy creation failed",
+                    Data = null
+                });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning("Unauthorized access: {Message}", ex.Message);
+                return Unauthorized(new ResponseModel<string>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while creating policy for customer.");
+                return StatusCode(500, new ResponseModel<string>
+                {
+                    Success = false,
+                    Message = "Internal server error",
+                    Data = ex.Message
+                });
+            }
+        }
+
+
 
         [HttpGet]
         [Authorize(Roles = "Admin,Employee,Agent")]

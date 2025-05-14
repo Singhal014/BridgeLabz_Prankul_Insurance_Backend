@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace BusinessLogicLayer.Services
 {
@@ -89,5 +90,41 @@ namespace BusinessLogicLayer.Services
                 throw;
             }
         }
+
+        public async Task<string> PayPendingCommissionsAsync()
+        {
+            try
+            {
+                var unpaidCommissions = await _context.Commissions
+                    .Where(c => !c.IsPaid)
+                    .ToListAsync();
+
+                if (unpaidCommissions.Count == 0)
+                {
+                    return "No pending commissions to pay.";
+                }
+
+                decimal totalCommissionAmount = 0m;
+                foreach (var commission in unpaidCommissions)
+                {
+                    commission.IsPaid = true;
+                    commission.PaidDate = DateTime.UtcNow;
+                    totalCommissionAmount += commission.CommissionAmount;
+
+                    _logger.LogInformation("Commission paid: AgentId={AgentId}, Amount={Amount}, PolicyId={PolicyId}",
+                        commission.AgentId, commission.CommissionAmount, commission.PolicyId);
+                }
+
+                int rowsAffected = await _context.SaveChangesAsync();
+
+                return $"Payment of {totalCommissionAmount} rupees has been initiated for {rowsAffected} policies.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while processing pending commission payments.");
+                throw;
+            }
+        }
+
     }
 }

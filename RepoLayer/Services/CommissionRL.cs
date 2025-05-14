@@ -78,5 +78,20 @@ namespace RepoLayer.Services
                 throw;
             }
         }
+        public async Task<int> PayPendingCommissionsAsync()
+        {
+            var unpaidCommissions = await _context.Commissions
+                .Where(c => !c.IsPaid)
+                .ToListAsync();
+
+            foreach (var commission in unpaidCommissions)
+            {
+                commission.IsPaid = true;
+                commission.PaidDate = DateTime.UtcNow;
+            }
+
+            return await _context.SaveChangesAsync();
+        }
+
     }
 }

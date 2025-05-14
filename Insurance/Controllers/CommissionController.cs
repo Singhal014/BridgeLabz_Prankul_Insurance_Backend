@@ -6,7 +6,8 @@ using RepoLayer.Entity;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize(Roles = "Employee,Agent")]
+[Authorize]
+
 public class CommissionController : ControllerBase
 {
     private readonly ICommissionBL _commissionBL;
@@ -17,7 +18,7 @@ public class CommissionController : ControllerBase
         _commissionBL = commissionBL;
         _logger = logger;
     }
-
+    [Authorize(Roles = "Employee,Agent")]
     [HttpPost]
     public async Task<IActionResult> Calculate([FromBody] CommissionModel model)
     {
@@ -54,7 +55,7 @@ public class CommissionController : ControllerBase
             });
         }
     }
-
+    [Authorize(Roles = "Employee,Agent")]
     [HttpGet("all")]
     public async Task<IActionResult> GetAllCommissions()
     {
@@ -90,6 +91,35 @@ public class CommissionController : ControllerBase
             });
         }
     }
+    [HttpPost("pay-pending")]
+    [Authorize(Roles = "Employee,Agent")]
+    public async Task<IActionResult> PayPendingCommissions()
+    {
+        try
+        {
+            string resultMessage = await _commissionBL.PayPendingCommissionsAsync();
+
+            return Ok(new ResponseModel<string>
+            {
+                Success = true,
+                Message = resultMessage,
+                Data = null
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while initiating pending commission payments.");
+            return StatusCode(500, new ResponseModel<string>
+            {
+                Success = false,
+                Message = "Internal server error while processing pending commission payments.",
+                Data = ex.Message
+            });
+        }
+    }
+
+
+
 
     private int? GetAgentIdFromClaims()
     {

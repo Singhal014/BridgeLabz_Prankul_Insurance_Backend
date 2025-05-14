@@ -9,5 +9,7 @@ namespace RepoLayer.Interfaces
         Task<Agent> GetAgentByEmailAsync(string email);
         Task<Agent> GetAgentByIdAsync(int agentId); 
         Task<bool> UpdateAgentAsync(Agent agentEntity);
+        Task<List<Agent>> GetAllAgentsAsync();
+
     }
 }

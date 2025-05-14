@@ -18,6 +18,7 @@ namespace BusinessLogicLayer.Helper
                 new Claim("Id", id.ToString()),
                 new Claim("Email", email),
                 new Claim("FullName", fullName),
+                new Claim("Role", role),
                 new Claim(ClaimTypes.Role, role)
             };
 

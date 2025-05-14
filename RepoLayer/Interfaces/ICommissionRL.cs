@@ -8,5 +8,7 @@ namespace RepoLayer.Interfaces
     {
         Task<Commission> CalculateCommissionAsync(Commission commission);
         Task<List<Commission>> GetAllCommissionsByAgentIdAsync(int agentId);
+        Task<int> PayPendingCommissionsAsync();
+
     }
 }

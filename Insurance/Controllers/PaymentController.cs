@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ModelLayer.Models;
+using ModelLayer.ViewModels;
 using RepoLayer.Entity;
 using System;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace Insurance.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize(Roles = "Employee,Agent")]
+    [Authorize]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentBL _paymentBL;
@@ -24,6 +25,8 @@ namespace Insurance.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Employee,Agent")]
+
         public async Task<IActionResult> ProcessPayment([FromBody] PaymentModel model)
         {
             try
@@ -60,6 +63,30 @@ namespace Insurance.Controllers
                 Data = result
             });
         }
+
+        [HttpGet("receipt")]
+        [Authorize(Roles = "Admin,Employee,Agent,Customer")]
+        public async Task<IActionResult> GetReceipt(long paymentId)
+        {
+            try
+            {
+                var receipt = await _paymentBL.GenerateReceiptAsync(paymentId);
+
+                return File(receipt.FileContent, "application/pdf", receipt.FileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching receipt for PaymentId: {PaymentId}", paymentId);
+                return StatusCode(500, new ResponseModel<string>
+                {
+                    Success = false,
+                    Message = "Error fetching receipt",
+                    Data = ex.Message
+                });
+            }
+        }
+
+
 
     }
 }

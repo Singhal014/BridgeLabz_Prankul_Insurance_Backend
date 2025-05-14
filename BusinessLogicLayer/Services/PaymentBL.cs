@@ -1,6 +1,7 @@
 ﻿using BusinessLogicLayer.Interfaces;
 using Microsoft.Extensions.Logging;
 using ModelLayer.Models;
+using ModelLayer.ViewModels;
 using RepoLayer.Context;
 using RepoLayer.Entity;
 using RepoLayer.Interfaces;
@@ -66,5 +67,21 @@ namespace BusinessLogicLayer.Services
                 throw;
             }
         }
+        public async Task<ReceiptViewModel> GenerateReceiptAsync(long paymentId)
+        {
+            try
+            {
+                return await _paymentRL.GenerateReceiptAsync(paymentId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating receipt for PaymentId: {PaymentId}", paymentId);
+                throw;
+            }
+        }
+
+
+
+
     }
 }

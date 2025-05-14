@@ -13,6 +13,6 @@ namespace ModelLayer.Models
         public string? Password { get; set; }
         public string Phone { get; set; }
         public DateTime DateOfBirth { get; set; }
-        public int? AgentID { get; set; }
+        public string? AgentEmail { get; set; }
     }
 }
