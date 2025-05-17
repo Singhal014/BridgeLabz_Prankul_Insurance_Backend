@@ -10,11 +10,15 @@ using RepoLayer.Services;
 using RabbitMQConsumer;
 using System.Text;
 using BusinessLogicLayer.Helper;
+using PdfSharp.Charting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers();
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 
 // Database Context
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -44,6 +48,8 @@ builder.Services.AddScoped<ICommissionBL, CommissionBL>();
 builder.Services.AddScoped<IPaymentBL, PaymentBL>();
 builder.Services.AddScoped<ISchemeBL, SchemeBL>();
 builder.Services.AddScoped<IPlanBL, PlanBL>();
+//builder.Services.AddHostedService<PolicyExpiryService>();
+
 
 // RabbitMQ Consumer
 builder.Services.AddHostedService<RabbitMQConsumerService>();

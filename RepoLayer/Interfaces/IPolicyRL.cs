@@ -12,7 +12,7 @@ namespace RepoLayer.Interfaces
         Task<List<Policy>> GetPoliciesByStatusAsync(string status);
         Task<Policy> GetPolicyByCustomerPlanSchemeAsync(int customerId, int planId, int schemeId);
         Task<Policy> CancelPolicyAsync(int policyId);
-
-
+        Task<List<Policy>> GetExpiredPoliciesAsync();
+        Task<string> GetCustomerEmailAsync(int customerId);
     }
 }

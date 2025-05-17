@@ -95,6 +95,48 @@ namespace BusinessLogicLayer.Services
                 throw;
             }
         }
+        public async Task<List<Policy>> GetExpiredPoliciesAsync()
+        {
+            try
+            {
+                var allPolicies = await _policyRL.GetAllPoliciesAsync();
+                var expiredPolicies = new List<Policy>();
+
+                foreach (var policy in allPolicies)
+                {
+                    if (policy.Status != "Active") continue;
+
+                    var expiryDate = policy.CreatedAt.AddYears(policy.MaturityPeriod);
+
+                    // Policy is expired if expiry date is in the past
+                    if (expiryDate <= DateTime.UtcNow)
+                    {
+                        expiredPolicies.Add(policy);
+                    }
+                }
+
+                return expiredPolicies;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting expired policies");
+                throw;
+            }
+        }
+
+        public async Task<string> GetCustomerEmailAsync(int customerId)
+        {
+            try
+            {
+             
+                return await _policyRL.GetCustomerEmailAsync(customerId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error getting email for customer {customerId}");
+                throw;
+            }
+        }
 
     }
 }

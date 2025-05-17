@@ -123,6 +123,23 @@ namespace RepoLayer.Services
                 throw;
             }
         }
+        public async Task<List<Policy>> GetExpiredPoliciesAsync()
+        {
+            var currentDate = DateTime.UtcNow;
+            return await _context.Policies
+                .Where(p => p.Status == "Active" &&
+                           EF.Functions.DateDiffDay(p.CreatedAt, currentDate) >= p.MaturityPeriod * 365)
+                .ToListAsync();
+        }
+
+        public async Task<string> GetCustomerEmailAsync(int customerId)
+        {
+            var customer = await _context.Customers
+                .Where(c => c.CustomerID == customerId)
+                .FirstOrDefaultAsync();
+
+            return customer?.Email;
+        }
 
     }
 }
